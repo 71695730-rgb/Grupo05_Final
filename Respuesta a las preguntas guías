@@ -1,1 +1,41 @@
+     PREGUNTAS Y RESPUESTAS 
 
+¿Qué información se debe almacenar en cada nodo del árbol?
+
+1. Dato principal (por ejemplo, el nombre del miembro o valor almacenado).
+2. Referencia al nodo padre (opcional, según la implementación).
+3. Referencias a los hijos (por ejemplo, hijo izquierdo y derecho en un árbol binario).
+4. Información adicional, como edad, fecha de nacimiento, relación, u otros atributos relevantes.
+
+
+¿Cómo insertar y eliminar miembros del árbol sin romper su genealogía?
+
+                                      INSERTAR:
+1. Se localiza la posición adecuada donde insertar el nuevo nodo (según el criterio del árbol: orden, jerarquía, parentesco, etc.).
+2. Se actualizan las referencias del padre e hijos para mantener la conexión;
+
+                                  ELIMINACION:
+1. Si el nodo no tiene hijos → se elimina directamente.
+2. Si tiene un hijo → se reemplaza con su hijo.
+3. Si tiene dos hijos → se busca un sucesor (por ejemplo, el más pequeño del subárbol derecho) y se reemplaza.
+4. Se deben ajustar las conexiones para conservar la integridad del árbol.
+
+¿Qué métodos permiten recorrer al árbol para visualizar la genealogía?
+
+1. Reorden (raíz → izquierda → derecha): útil para mostrar jerarquías.
+2. Inorden (izquierda → raíz → derecha): muestra datos ordenados (en árboles binarios de búsqueda).
+3. Postor den (izquierda → derecha → raíz): útil para eliminar o procesar de abajo hacia arriba.
+4. Por niveles (Breadth-First o BFS): recorre el árbol por generaciones (nivel por nivel).
+
+¿Cómo determinar si un miembro pertenece a una rama especifica? 
+
+1. Se puede realizar un recorrido del árbol buscando el nodo que representa al miembro.
+2. Durante el recorrido, se verifica si el nodo está dentro del subárbol que representa la rama específica.
+3. También se puede usar búsqueda recursiva o por niveles para comprobar si el miembro aparece dentro de los descendientes de un nodo dado.
+
+¿Cómo balancear el árbol si se vuelve demasiado profundo?
+
+1. Rotaciones (en árboles binarios): rotación simple o doble (como en los árboles AVL).
+2. Reestructuración de los nodos para distribuirlos equitativamente.
+3. Conversión a un árbol balanceado (AVL, Red-Black, o B-Tree según el tipo).
+4. En árboles genealógicos, el “balanceo” suele ser conceptual (ordenar o reorganizar visualmente las generaciones para facilitar la lectura).
