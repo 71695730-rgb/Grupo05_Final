@@ -79,7 +79,7 @@ private:
             if (nodo->derecho) nodo->derecho->padre = nodo;
         }
         else {
-            // Nodo encontrado
+            // Nodo encontrado: manejar eliminación
             cout << "Miembro eliminado: " << nodo->nombre << endl;
 
             if (nodo->izquierdo == NULL) {
@@ -95,6 +95,7 @@ private:
                 return temp;
             }
 
+            // Caso de 2 hijos: usar sucesor
             Nodo* temp = encontrarMin(nodo->derecho);
             nodo->nombre = temp->nombre;
             nodo->identificador = temp->identificador;
@@ -289,14 +290,13 @@ public:
     }
 };
 
-
 // =============================
 //           MAIN
 // =============================
 void mostrarMenu() {
-    cout << "\n+----------------------------------------------+\n";
+    cout << "\n----------------------------------------------\n";
     cout << " ARBOL GENEALOGICO - CIVILIZACION ANCESTRAL\n";
-    cout << "+----------------------------------------------+\n";
+    cout << "----------------------------------------------\n";
     cout << "1. Insertar miembro\n";
     cout << "2. Eliminar miembro\n";
     cout << "3. Buscar miembro por ID\n";
@@ -307,10 +307,10 @@ void mostrarMenu() {
     cout << "8. Mostrar ancestros\n";
     cout << "9. Mostrar descendientes\n";
     cout << "10. Verificar pertenencia a rama\n";
-    cout << "11. Altura del árbol\n";
-    cout << "12. Limpiar árbol\n";
-    cout << "0. Salir\n";
-    cout << "Opción: ";
+    cout << "11. Altura del arbol\n";
+    cout << "12. Limpiar arbol\n";
+    cout << "13. Salir\n";
+    cout << "Opcion: ";
 }
 
 int main() {
@@ -333,7 +333,6 @@ int main() {
         cin.ignore();
 
         switch(opcion) {
-
         case 1:
             cout << "\nNombre: ";
             getline(cin, nombre);
@@ -401,6 +400,9 @@ int main() {
             arbol.limpiar();
             break;
 
+        default:
+            cout << "Opción inválida. Intente de nuevo.\n";
+            break;
         }
         
         if (opcion != 0) {
@@ -412,4 +414,3 @@ int main() {
 
     return 0;
 }
-
