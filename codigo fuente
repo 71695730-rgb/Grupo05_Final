@@ -1,1 +1,415 @@
+#include <iostream>
+#include <string>
+#include <queue>
+#include <algorithm>
+using namespace std;
+
+// =============================
+//       ESTRUCTURA NODO
+// =============================
+struct Nodo {
+    string nombre;
+    int identificador;
+    int anioNacimiento;
+    string generacion;
+
+    Nodo* izquierdo;
+    Nodo* derecho;
+    Nodo* padre;
+
+    Nodo(string nom, int id, int anio, string gen) {
+        nombre = nom;
+        identificador = id;
+        anioNacimiento = anio;
+        generacion = gen;
+        izquierdo = NULL;
+        derecho = NULL;
+        padre = NULL;
+    }
+};
+
+// =============================
+//     CLASE ÁRBOL GENEALÓGICO
+// =============================
+class ArbolGenealogico {
+private:
+    Nodo* raiz;
+
+    // --- Métodos auxiliares ---
+    Nodo* insertarRec(Nodo* nodo, string nombre, int id, int anio, string gen) {
+        if (nodo == NULL) {
+            return new Nodo(nombre, id, anio, gen);
+        }
+
+        if (id == nodo->identificador) {
+            cout << "ERROR: ID duplicado." << endl;
+            return nodo;
+        }
+
+        if (id < nodo->identificador) {
+            nodo->izquierdo = insertarRec(nodo->izquierdo, nombre, id, anio, gen);
+            nodo->izquierdo->padre = nodo;
+        } else {
+            nodo->derecho = insertarRec(nodo->derecho, nombre, id, anio, gen);
+            nodo->derecho->padre = nodo;
+        }
+
+        return nodo;
+    }
+
+    Nodo* encontrarMin(Nodo* nodo) {
+        while (nodo && nodo->izquierdo != NULL) {
+            nodo = nodo->izquierdo;
+        }
+        return nodo;
+    }
+
+    Nodo* eliminarRec(Nodo* nodo, int id) {
+        if (nodo == NULL) {
+            cout << "Miembro no encontrado.\n";
+            return NULL;
+        }
+
+        if (id < nodo->identificador) {
+            nodo->izquierdo = eliminarRec(nodo->izquierdo, id);
+            if (nodo->izquierdo) nodo->izquierdo->padre = nodo;
+        }
+        else if (id > nodo->identificador) {
+            nodo->derecho = eliminarRec(nodo->derecho, id);
+            if (nodo->derecho) nodo->derecho->padre = nodo;
+        }
+        else {
+            // Nodo encontrado
+            cout << "Miembro eliminado: " << nodo->nombre << endl;
+
+            if (nodo->izquierdo == NULL) {
+                Nodo* temp = nodo->derecho;
+                if (temp) temp->padre = nodo->padre;
+                delete nodo;
+                return temp;
+            }
+            else if (nodo->derecho == NULL) {
+                Nodo* temp = nodo->izquierdo;
+                if (temp) temp->padre = nodo->padre;
+                delete nodo;
+                return temp;
+            }
+
+            Nodo* temp = encontrarMin(nodo->derecho);
+            nodo->nombre = temp->nombre;
+            nodo->identificador = temp->identificador;
+            nodo->anioNacimiento = temp->anioNacimiento;
+            nodo->generacion = temp->generacion;
+
+            nodo->derecho = eliminarRec(nodo->derecho, temp->identificador);
+        }
+
+        return nodo;
+    }
+
+    Nodo* buscarIDRec(Nodo* nodo, int id) {
+        if (nodo == NULL || nodo->identificador == id)
+            return nodo;
+
+        if (id < nodo->identificador)
+            return buscarIDRec(nodo->izquierdo, id);
+
+        return buscarIDRec(nodo->derecho, id);
+    }
+
+    void inordenRec(Nodo* nodo) {
+        if (nodo != NULL) {
+            inordenRec(nodo->izquierdo);
+            cout << nodo->nombre << " (ID: " << nodo->identificador << ")\n";
+            inordenRec(nodo->derecho);
+        }
+    }
+
+    void preordenRec(Nodo* nodo) {
+        if (nodo != NULL) {
+            cout << nodo->nombre << " (ID: " << nodo->identificador << ")\n";
+            preordenRec(nodo->izquierdo);
+            preordenRec(nodo->derecho);
+        }
+    }
+
+    void postordenRec(Nodo* nodo) {
+        if (nodo != NULL) {
+            postordenRec(nodo->izquierdo);
+            postordenRec(nodo->derecho);
+            cout << nodo->nombre << " (ID: " << nodo->identificador << ")\n";
+        }
+    }
+
+    void mostrarDescRec(Nodo* nodo) {
+        if (nodo != NULL) {
+            if (nodo->izquierdo) {
+                cout << nodo->izquierdo->nombre << " (ID: " 
+                     << nodo->izquierdo->identificador << ")\n";
+                mostrarDescRec(nodo->izquierdo);
+            }
+            if (nodo->derecho) {
+                cout << nodo->derecho->nombre << " (ID: " 
+                     << nodo->derecho->identificador << ")\n";
+                mostrarDescRec(nodo->derecho);
+            }
+        }
+    }
+
+    bool perteneceARamaRec(Nodo* nodo, int id) {
+        if (nodo == NULL) return false;
+        if (nodo->identificador == id) return true;
+        return perteneceARamaRec(nodo->izquierdo, id) ||
+               perteneceARamaRec(nodo->derecho, id);
+    }
+
+    int alturaRec(Nodo* nodo) {
+        if (nodo == NULL) return 0;
+        int hIzq = alturaRec(nodo->izquierdo);
+        int hDer = alturaRec(nodo->derecho);
+        return 1 + max(hIzq, hDer);
+    }
+
+    void limpiarRec(Nodo* nodo) {
+        if (nodo != NULL) {
+            limpiarRec(nodo->izquierdo);
+            limpiarRec(nodo->derecho);
+            delete nodo;
+        }
+    }
+
+public:
+
+    ArbolGenealogico() { raiz = NULL; }
+    ~ArbolGenealogico() { limpiarRec(raiz); }
+
+    // ========================
+    //         PUBLICO
+    // ========================
+    void insertar(string nombre, int id, int anio, string gen) {
+        raiz = insertarRec(raiz, nombre, id, anio, gen);
+    }
+
+    void eliminar(int id) {
+        raiz = eliminarRec(raiz, id);
+        if (raiz) raiz->padre = NULL;
+    }
+
+    Nodo* buscar(int id) {
+        return buscarIDRec(raiz, id);
+    }
+
+    void mostrarInorden() {
+        cout << "\n=== INORDEN ===\n";
+        inordenRec(raiz);
+    }
+
+    void mostrarPreorden() {
+        cout << "\n=== PREORDEN ===\n";
+        preordenRec(raiz);
+    }
+
+    void mostrarPostorden() {
+        cout << "\n=== POSTORDEN ===\n";
+        postordenRec(raiz);
+    }
+
+    void mostrarPorNiveles() {
+        cout << "\n=== POR NIVELES ===\n";
+
+        if (!raiz) { 
+            cout << "Árbol vacío\n"; 
+            return;
+        }
+
+        queue<Nodo*> cola;
+        cola.push(raiz);
+
+        while (!cola.empty()) {
+            Nodo* actual = cola.front();
+            cola.pop();
+
+            cout << actual->nombre 
+                 << " (ID: " << actual->identificador << ")\n";
+
+            if (actual->izquierdo) cola.push(actual->izquierdo);
+            if (actual->derecho) cola.push(actual->derecho);
+        }
+    }
+
+    void mostrarAncestros(int id) {
+        Nodo* nodo = buscar(id);
+        if (!nodo) {
+            cout << "Miembro no encontrado.\n";
+            return;
+        }
+
+        cout << "\n=== ANCESTROS ===\n";
+        nodo = nodo->padre;
+
+        if (!nodo) {
+            cout << "Es la raíz.\n";
+            return;
+        }
+
+        while (nodo) {
+            cout << nodo->nombre << " (ID: " << nodo->identificador << ")\n";
+            nodo = nodo->padre;
+        }
+    }
+
+    void mostrarDescendientesDeID(int id) {
+        Nodo* nodo = buscar(id);
+        if (!nodo) {
+            cout << "Miembro no encontrado.\n";
+            return;
+        }
+
+        cout << "\n=== DESCENDIENTES ===\n";
+        mostrarDescRec(nodo);
+    }
+
+    bool verificarRama(int idRama, int idBuscado) {
+        Nodo* rama = buscar(idRama);
+        if (!rama) {
+            cout << "La rama no existe.\n";
+            return false;
+        }
+        return perteneceARamaRec(rama, idBuscado);
+    }
+
+    int altura() { return alturaRec(raiz); }
+
+    bool estaVacio() { return raiz == NULL; }
+
+    void limpiar() {
+        limpiarRec(raiz);
+        raiz = NULL;
+        cout << "Árbol limpiado.\n";
+    }
+};
+
+
+// =============================
+//           MAIN
+// =============================
+void mostrarMenu() {
+    cout << "\n+----------------------------------------------+\n";
+    cout << " ARBOL GENEALOGICO - CIVILIZACION ANCESTRAL\n";
+    cout << "+----------------------------------------------+\n";
+    cout << "1. Insertar miembro\n";
+    cout << "2. Eliminar miembro\n";
+    cout << "3. Buscar miembro por ID\n";
+    cout << "4. Recorrido Inorden\n";
+    cout << "5. Recorrido Preorden\n";
+    cout << "6. Recorrido Postorden\n";
+    cout << "7. Recorrido Por Niveles\n";
+    cout << "8. Mostrar ancestros\n";
+    cout << "9. Mostrar descendientes\n";
+    cout << "10. Verificar pertenencia a rama\n";
+    cout << "11. Altura del árbol\n";
+    cout << "12. Limpiar árbol\n";
+    cout << "0. Salir\n";
+    cout << "Opción: ";
+}
+
+int main() {
+    ArbolGenealogico arbol;
+    int opcion, id, anio, idRama;
+    string nombre, generacion;
+
+    // Datos iniciales
+    arbol.insertar("Ancestro Fundador", 50, 1200, "Primera Generación");
+    arbol.insertar("Hijo Primogénito", 25, 1230, "Segunda Generación");
+    arbol.insertar("Hijo Segundo", 75, 1235, "Segunda Generación");
+    arbol.insertar("Nieto Izquierdo", 10, 1260, "Tercera Generación");
+    arbol.insertar("Nieto Centro", 40, 1265, "Tercera Generación");
+    arbol.insertar("Nieto Derecho", 60, 1268, "Tercera Generación");
+    arbol.insertar("Bisnieto", 5, 1290, "Cuarta Generación");
+
+    do {
+        mostrarMenu();
+        cin >> opcion;
+        cin.ignore();
+
+        switch(opcion) {
+
+        case 1:
+            cout << "\nNombre: ";
+            getline(cin, nombre);
+            cout << "ID: ";
+            cin >> id;
+            cout << "Año de nacimiento: ";
+            cin >> anio;
+            cin.ignore();
+            cout << "Generación: ";
+            getline(cin, generacion);
+            arbol.insertar(nombre, id, anio, generacion);
+            break;
+
+        case 2:
+            cout << "ID a eliminar: ";
+            cin >> id;
+            arbol.eliminar(id);
+            break;
+
+        case 3:
+            cout << "ID a buscar: ";
+            cin >> id;
+            {
+                Nodo* n = arbol.buscar(id);
+                if (n)
+                    cout << "\nEncontrado: " << n->nombre << " (ID: " << n->identificador << ")\n";
+                else
+                    cout << "No encontrado.\n";
+            }
+            break;
+
+        case 4: arbol.mostrarInorden(); break;
+        case 5: arbol.mostrarPreorden(); break;
+        case 6: arbol.mostrarPostorden(); break;
+        case 7: arbol.mostrarPorNiveles(); break;
+
+        case 8:
+            cout << "ID: ";
+            cin >> id;
+            arbol.mostrarAncestros(id);
+            break;
+
+        case 9:
+            cout << "ID: ";
+            cin >> id;
+            arbol.mostrarDescendientesDeID(id);
+            break;
+
+        case 10:
+            cout << "ID rama: ";
+            cin >> idRama;
+            cout << "ID miembro: ";
+            cin >> id;
+            if (arbol.verificarRama(idRama, id))
+                cout << "Pertenece a la rama.\n";
+            else
+                cout << "NO pertenece a la rama.\n";
+            break;
+
+        case 11:
+            cout << "Altura: " << arbol.altura() << endl;
+            break;
+
+        case 12:
+            arbol.limpiar();
+            break;
+
+        }
+        
+        if (opcion != 0) {
+            cout << "\nPresione Enter para continuar...";
+            cin.ignore();
+        }
+
+    } while (opcion != 0);
+
+    return 0;
+}
 
